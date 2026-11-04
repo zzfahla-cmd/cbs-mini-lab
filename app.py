@@ -60,3 +60,28 @@ elif menu == "Dashboard / Ledger":
         st.dataframe(df_jurnal, use_container_width=True)
     else:
         st.write("Belum ada transaksi hari ini.")
+
+# MENU 3: CUSTOMER SERVICE (BUKA REKENING)
+elif menu == "Customer Service":
+    st.header("🧑‍💼 Customer Service - Buka Rekening Baru")
+
+    nama = st.text_input("Nama Lengkap Nasabah")
+    setoran_awal = st.number_input("Setoran Awal (Rp)", min_value=50000, step=50000)
+
+    if st.button("Buka Rekening"):
+        if nama.strip() == "":
+            st.error("Nama tidak boleh kosong!")
+        else:
+            no_baru = str(123456 + len(st.session_state.rekening_nasabah))
+            st.session_state.rekening_nasabah[no_baru] = {"nama": nama.strip(), "saldo": setoran_awal}
+            st.session_state.saldo_kas += setoran_awal
+
+            waktu = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            st.session_state.jurnal_umum.append({"Waktu": waktu, "No Rek": no_baru, "Kode Akun": "101 - Kas Teller", "Debit": setoran_awal, "Kredit": 0})
+            st.session_state.jurnal_umum.append({"Waktu": waktu, "No Rek": no_baru, "Kode Akun": "201 - Tabungan Nasabah", "Debit": 0, "Kredit": setoran_awal})
+
+            st.success(f"Rekening {no_baru} atas nama {nama.strip()} berhasil dibuka!")
+
+    st.subheader("📋 Daftar Rekening Nasabah")
+    data = [{"No Rek": k, "Nama": v["nama"], "Saldo": v["saldo"]} for k, v in st.session_state.rekening_nasabah.items()]
+    st.dataframe(pd.DataFrame(data), use_container_width=True)
